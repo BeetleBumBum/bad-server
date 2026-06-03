@@ -3,6 +3,7 @@ import { FilterQuery } from 'mongoose'
 import NotFoundError from '../errors/not-found-error'
 import Order from '../models/order'
 import User, { IUser } from '../models/user'
+import _ from 'lodash'
 
 // TODO: Добавить guard admin
 // eslint-disable-next-line max-len
@@ -92,7 +93,8 @@ export const getCustomers = async (
         }
 
         if (search) {
-            const searchRegex = new RegExp(search as string, 'i')
+            const safeSearch = _.escapeRegExp(search as string)
+            const searchRegex = new RegExp(safeSearch, 'i')
             const orders = await Order.find(
                 {
                     $or: [{ deliveryAddress: searchRegex }],
@@ -179,6 +181,10 @@ export const updateCustomer = async (
     next: NextFunction
 ) => {
     try {
+        Object.keys(req.body).forEach((key) => {
+            if (key.startsWith('$')) delete req.body[key]
+        })
+
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
             req.body,

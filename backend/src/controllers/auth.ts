@@ -192,6 +192,10 @@ const updateCurrentUser = async (
 ) => {
     const userId = res.locals.user._id
     try {
+        Object.keys(req.body).forEach((key) => {
+            if (key.startsWith('$')) delete req.body[key]
+        })
+
         const updatedUser = await User.findByIdAndUpdate(userId, req.body, {
             new: true,
         }).orFail(
