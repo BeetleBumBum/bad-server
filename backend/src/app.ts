@@ -10,15 +10,26 @@ import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
 import { sanitizeReq } from './middlewares/sanitize'
+import csrf from 'csurf';
 
 const { PORT = 3000 } = process.env
 const app = express()
+// const csrf = require('csurf');
 
 app.use(cookieParser())
 // app.use(cors())
 app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
 app.options('*', cors())
+
+const csrfProtection = csrf({ cookie: true }) as any;
+// app.post('*', csrfProtection);
+// app.put('*', csrfProtection);
+// app.patch('*', csrfProtection);
+// app.delete('*', csrfProtection);
+app.get('/csrf-token', csrfProtection, (req: any, res: any) => {
+    res.json({ csrfToken: req.csrfToken() });
+});
 
 app.use((req, res, next) => {
   res.setHeader(
@@ -38,7 +49,6 @@ app.use(sanitizeReq);
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)
-
 
 // eslint-disable-next-line no-console
 
