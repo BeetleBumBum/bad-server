@@ -1,7 +1,7 @@
 import sanitizeHtml from 'sanitize-html'
 
 export const clean = (dirty: string): string => {
-    if (!dirty) return '';
+    if (!dirty) return ''
 
     return sanitizeHtml(dirty, {
         allowedTags: [
@@ -33,21 +33,21 @@ export const clean = (dirty: string): string => {
                 'loading',
             ],
         },
-        allowedSchemes: ['http', 'https' ],
+        allowedSchemes: ['http', 'https'],
         allowedSchemesByTag: {},
         allowedSchemesAppliedToAttributes: ['href', 'src', 'cite'],
         allowProtocolRelative: false,
-    });
-};
+    })
+}
 
 // санитизируем все строки
-export const sanitizeReq = (req: any, res: any, next: any) => {
+export const sanitizeReq = (req: any, _res: any, next: any) => {
     if (req.body) {
-        for (let key in req.body) {
+        Object.keys(req.body).forEach((key) => {
             if (typeof req.body[key] === 'string') {
-                req.body[key] = clean(req.body[key]);
+                req.body[key] = clean(req.body[key])
             }
-        }
+        })
     }
-    next();
+    next()
 }

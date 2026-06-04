@@ -5,12 +5,12 @@ import 'dotenv/config'
 import express, { json, urlencoded } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
+import { doubleCsrf } from 'csrf-csrf';
 import { DB_ADDRESS, ORIGIN_ALLOW } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
 import { sanitizeReq } from './middlewares/sanitize'
-import csrf from 'csurf';
 
 const { PORT = 3000 } = process.env
 const app = express()
@@ -22,16 +22,23 @@ app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
 // app.use(express.static(path.join(__dirname, 'public')));
 app.options('*', cors())
 
-const csrfProtection = csrf({ cookie: true }) as any;
-// app.post('*', csrfProtection);
-// app.put('*', csrfProtection);
-// app.patch('*', csrfProtection);
-// app.delete('*', csrfProtection);
-app.get('/csrf-token', csrfProtection, (req: any, res: any) => {
-    res.json({ csrfToken: req.csrfToken() });
+const csrf = doubleCsrf({
+  getSecret: () => process.env.CSRF_SECRET || 'your-super-secret-key-for-csrf-protection-min-32-chars',
+  getSessionIdentifier: (req) => req.cookies.sessionId || req.headers['x-session-id'] as string || 'default-session',
+  cookieName: 'csrf-token',
+  cookieOptions: { 
+    httpOnly: true, 
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production'
+  },
+  size: 64,
 });
 
-app.use((req, res, next) => {
+app.get('/csrf-token', csrf.doubleCsrfProtection, (req: any, res: any) => {
+    res.json({ csrfToken: csrf.generateCsrfToken(req, res) });
+});
+
+app.use((_req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; img-src *; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:3000 http://localhost:5173"
