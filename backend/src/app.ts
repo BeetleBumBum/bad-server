@@ -25,7 +25,7 @@ app.options('*', cors())
 const csrf = doubleCsrf({
   getSecret: () => process.env.CSRF_SECRET || 'your-super-secret-key-for-csrf-protection-min-32-chars',
   getSessionIdentifier: (req) => req.cookies.sessionId || req.headers['x-session-id'] as string || 'default-session',
-  cookieName: 'csrf-token',
+  cookieName: '_csrf',
   cookieOptions: { 
     httpOnly: true, 
     sameSite: 'lax',
