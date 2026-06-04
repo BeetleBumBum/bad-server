@@ -37,6 +37,9 @@ const csrf = doubleCsrf({
 app.get('/csrf-token', csrf.doubleCsrfProtection, (req: any, res: any) => {
     res.json({ csrfToken: csrf.generateCsrfToken(req, res) });
 });
+app.get('/api/auth/csrf-token', csrf.doubleCsrfProtection, (req: any, res: any) => {
+    res.json({ csrfToken: csrf.generateCsrfToken(req, res) });
+});
 
 app.use((_req, res, next) => {
   res.setHeader(

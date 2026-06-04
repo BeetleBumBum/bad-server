@@ -99,7 +99,7 @@ export default function ProfileOrders() {
             })
             setSearchParams({ ...filters, search: value })
         },
-        [searchParams, dispatch, setSearchParams]
+        [searchParams, setSearchParams]
     )
 
     return (
