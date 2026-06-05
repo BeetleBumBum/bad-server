@@ -11,6 +11,7 @@ import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
 import { sanitizeReq } from './middlewares/sanitize'
+import rateLimit from 'express-rate-limit'
 
 const { PORT = 3000 } = process.env
 const app = express()
@@ -53,6 +54,15 @@ app.use(serveStatic(path.join(__dirname, 'public')))
 
 app.use(urlencoded({ extended: true }))
 app.use(json())
+
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    limit: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+})
+
+app.use(limiter) 
 
 app.use(sanitizeReq);
 

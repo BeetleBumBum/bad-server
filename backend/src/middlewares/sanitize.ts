@@ -70,3 +70,8 @@ export const sanitizeObj = (obj: any): any => {
     }
     return sanitized
 }
+
+export const hasOperators = (obj: any): boolean => {
+    const str = JSON.stringify(obj)
+    return /\$expr|\$function|\$ne|\$gt|\$lt|\$regex|\$where/i.test(str)
+}
