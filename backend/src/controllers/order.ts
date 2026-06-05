@@ -16,7 +16,7 @@ export const getOrders = async (
     next: NextFunction
 ) => {
     try {
-        const {
+        let {
             page = 1,
             limit = 10,
             sortField = 'createdAt',
@@ -28,6 +28,7 @@ export const getOrders = async (
             orderDateTo,
             search,
         } = req.query
+        limit = Math.min(Number(limit), 10)
 
         const filters: FilterQuery<Partial<IOrder>> = {}
 
@@ -35,9 +36,9 @@ export const getOrders = async (
             if (typeof status === 'object') {
                 Object.assign(filters, status)
             }
-            if (typeof status === 'string') {
-                filters.status = status
-            }
+            // if (typeof status === 'string') {
+            //     filters.status = status
+            // }
         }
 
         if (totalAmountFrom) {
@@ -158,7 +159,8 @@ export const getOrdersCurrentUser = async (
 ) => {
     try {
         const userId = res.locals.user._id
-        const { search, page = 1, limit = 5 } = req.query
+        let { search, page = 1, limit = 5 } = req.query
+        limit = Math.min(Number(limit), 5)
         const options = {
             skip: (Number(page) - 1) * Number(limit),
             limit: Number(limit),
