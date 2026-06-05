@@ -5,26 +5,73 @@ import 'dotenv/config'
 import express, { json, urlencoded } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
-import { DB_ADDRESS } from './config'
+import { doubleCsrf } from 'csrf-csrf'
+import rateLimit from 'express-rate-limit'
+import { DB_ADDRESS, ORIGIN_ALLOW } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
+import { sanitizeReq } from './middlewares/sanitize'
 
 const { PORT = 3000 } = process.env
 const app = express()
 
 app.use(cookieParser())
+app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }))
+app.options('*', cors())
 
-app.use(cors())
-// app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
-// app.use(express.static(path.join(__dirname, 'public')));
+const csrf = doubleCsrf({
+    getSecret: () =>
+        process.env.CSRF_SECRET ||
+        'your-super-secret-key-for-csrf-protection-min-32-chars',
+    getSessionIdentifier: (req) =>
+        req.cookies.sessionId ||
+        (req.headers['x-session-id'] as string) ||
+        'default-session',
+    cookieName: '_csrf',
+    cookieOptions: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+    },
+    size: 64,
+})
+
+app.get('/csrf-token', csrf.doubleCsrfProtection, (req: any, res: any) => {
+    res.json({ csrfToken: csrf.generateCsrfToken(req, res) })
+})
+app.get(
+    '/api/auth/csrf-token',
+    csrf.doubleCsrfProtection,
+    (req: any, res: any) => {
+        res.json({ csrfToken: csrf.generateCsrfToken(req, res) })
+    }
+)
+
+app.use((_req, res, next) => {
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'self'; img-src *; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:3000 http://localhost:5173"
+    )
+    next()
+})
 
 app.use(serveStatic(path.join(__dirname, 'public')))
 
 app.use(urlencoded({ extended: true }))
 app.use(json())
 
-app.options('*', cors())
+const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    limit: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+})
+
+app.use(limiter)
+
+app.use(sanitizeReq)
+
 app.use(routes)
 app.use(errors())
 app.use(errorHandler)

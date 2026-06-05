@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import Button from '@components/button'
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { useActionCreators, useSelector } from '../../services/hooks'
 import {
     orderFormActions,
@@ -21,21 +21,15 @@ export function OrderAddress() {
     const orderPersistData = useSelector(selectOrderInfo)
     const { setInfo } = useActionCreators(orderFormActions)
     const formRef = useRef<HTMLFormElement | null>(null)
-    const { values, handleChange, errors, isValid, setValuesForm } =
+
+    const { values, handleChange, errors, isValid } =
         useFormWithValidation<PaymentFormValues>(
             {
-                address: '',
-                payment: PaymentType.Online,
+                address: orderPersistData.address || '', // начальное значение из Redux
+                payment: orderPersistData.payment || PaymentType.Online,
             },
             formRef.current
         )
-
-    useEffect(() => {
-        setValuesForm({
-            address: orderPersistData.address,
-            payment: PaymentType.Online,
-        })
-    }, [orderPersistData])
 
     const nextStep = () => {
         setInfo(values)

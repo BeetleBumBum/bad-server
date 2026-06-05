@@ -14,3 +14,6 @@ docker compose up -d
 
 ## Ссылка на репозиторий
 https://github.com/BeetleBumBum/bad-server#
+Имя: Ковальчук Юлия
+Когорта: 44
+Курс: Фулстек-разработчик

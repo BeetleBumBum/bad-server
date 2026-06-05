@@ -11,7 +11,9 @@ import movingFile from '../utils/movingFile'
 // GET /product
 const getProducts = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { page = 1, limit = 5 } = req.query
+        let { limit = 5 } = req.query
+        const { page = 1 } = req.query
+        limit = Math.min(Number(limit), 5)
         const options = {
             skip: (Number(page) - 1) * Number(limit),
             limit: Number(limit),

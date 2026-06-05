@@ -5,11 +5,16 @@ import path from 'path'
 export default function serveStatic(baseDir: string) {
     return (req: Request, res: Response, next: NextFunction) => {
         // Определяем полный путь к запрашиваемому файлу
-        const filePath = path.join(baseDir, req.path)
+        const safePath = path.normalize(req.path).replace(/^(\.\.[/\\])+/, '')
+        const filePath = path.join(baseDir, safePath)
+
+        if (!filePath.startsWith(baseDir)) {
+            return res.status(403).send('Forbidden')
+        }
 
         // Проверяем, существует ли файл
-        fs.access(filePath, fs.constants.F_OK, (err) => {
-            if (err) {
+        fs.access(filePath, fs.constants.F_OK, (error) => {
+            if (error) {
                 // Файл не существует отдаем дальше мидлварам
                 return next()
             }
