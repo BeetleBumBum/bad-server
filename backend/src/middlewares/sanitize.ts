@@ -51,3 +51,22 @@ export const sanitizeReq = (req: any, _res: any, next: any) => {
     }
     next()
 }
+
+export const sanitizeObj = (obj: any): any => {
+    if (typeof obj !== 'object' || obj === null) {
+        return obj
+    }
+
+    if (Array.isArray(obj)) {
+        return obj.map(sanitizeObj)
+    }
+
+    const sanitized: any = {}
+    for (const [key, value] of Object.entries(obj)) {
+        if (key.startsWith('$')) {
+            continue
+        }
+        sanitized[key] = sanitizeObj(value)
+    }
+    return sanitized
+}

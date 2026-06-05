@@ -6,6 +6,7 @@ import Order, { IOrder } from '../models/order'
 import Product, { IProduct } from '../models/product'
 import User from '../models/user'
 import escapeRegExp from '../utils/escapeRegExp'
+import { sanitizeObj } from '../middlewares/sanitize'
 
 // eslint-disable-next-line max-len
 // GET /orders?page=2&limit=5&sort=totalAmount&order=desc&orderDateFrom=2024-07-01&orderDateTo=2024-08-01&status=delivering&totalAmountFrom=100&totalAmountTo=1000&search=%2B1
@@ -16,6 +17,7 @@ export const getOrders = async (
     next: NextFunction
 ) => {
     try {
+        req.query = sanitizeObj(req.query)
         let {
             page = 1,
             limit = 10,
@@ -36,9 +38,9 @@ export const getOrders = async (
             if (typeof status === 'object') {
                 Object.assign(filters, status)
             }
-            // if (typeof status === 'string') {
-            //     filters.status = status
-            // }
+            if (typeof status === 'string') {
+                filters.status = status
+            }
         }
 
         if (totalAmountFrom) {

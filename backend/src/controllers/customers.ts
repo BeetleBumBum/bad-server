@@ -4,6 +4,7 @@ import NotFoundError from '../errors/not-found-error'
 import Order from '../models/order'
 import User, { IUser } from '../models/user'
 import escapeRegExp from '../utils/escapeRegExp'
+import { sanitizeObj } from '../middlewares/sanitize'
 
 // TODO: Добавить guard admin
 // eslint-disable-next-line max-len
@@ -14,7 +15,8 @@ export const getCustomers = async (
     next: NextFunction
 ) => {
     try {
-        const {
+        req.query = sanitizeObj(req.query)
+        let {
             page = 1,
             limit = 10,
             sortField = 'createdAt',
@@ -29,6 +31,7 @@ export const getCustomers = async (
             orderCountTo,
             search,
         } = req.query
+        limit = Math.min(Number(limit), 10)
 
         const filters: FilterQuery<Partial<IUser>> = {}
 
