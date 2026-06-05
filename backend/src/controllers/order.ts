@@ -21,9 +21,9 @@ export const getOrders = async (
             throw new BadRequestError('Невозможно использовать данный оператор')
         }
         req.query = sanitizeObj(req.query)
-        let {
+        let { limit = 10 } = req.query
+        const {
             page = 1,
-            limit = 10,
             sortField = 'createdAt',
             sortOrder = 'desc',
             status,
@@ -36,15 +36,6 @@ export const getOrders = async (
         limit = Math.min(Number(limit), 10)
 
         const filters: FilterQuery<Partial<IOrder>> = {}
-
-        // if (status) {
-        //     if (typeof status === 'object') {
-        //         Object.assign(filters, status)
-        //     }
-        //     if (typeof status === 'string') {
-        //         filters.status = status
-        //     }
-        // }
 
         if (status && typeof status === 'string') {
             filters.status = status
@@ -168,7 +159,8 @@ export const getOrdersCurrentUser = async (
 ) => {
     try {
         const userId = res.locals.user._id
-        let { search, page = 1, limit = 5 } = req.query
+        let { limit = 5 } = req.query
+        const { search, page = 1 } = req.query
         limit = Math.min(Number(limit), 5)
         const options = {
             skip: (Number(page) - 1) * Number(limit),

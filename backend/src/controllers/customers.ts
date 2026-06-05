@@ -16,9 +16,9 @@ export const getCustomers = async (
 ) => {
     try {
         req.query = sanitizeObj(req.query)
-        let {
+        let { limit = 10 } = req.query
+        const {
             page = 1,
-            limit = 10,
             sortField = 'createdAt',
             sortOrder = 'desc',
             registrationDateFrom,

@@ -1,5 +1,5 @@
 import InputMask from '@mona-health/react-input-mask'
-import { SyntheticEvent, useEffect, useRef } from 'react'
+import { SyntheticEvent, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { AppRoute } from '../../utils/constants'
 import Button from '../button/button'
@@ -28,17 +28,13 @@ export function OrderContacts() {
 
     const { values, handleChange, errors, isValid, setValuesForm } =
         useFormWithValidation<ContactsFormValues>(
-            { email: '', phone: '', comment: '' },
+            {
+                email: orderPersistData.email || '',
+                phone: orderPersistData.phone || '',
+                comment: '',
+            },
             formRef.current
         )
-
-    useEffect(() => {
-        // восстанавливаем значение формы из стора
-        setValuesForm({
-            email: orderPersistData.email,
-            phone: orderPersistData.phone,
-        })
-    }, [orderPersistData, setValuesForm])
 
     const handleEditInputChange = (value: string) => {
         setValuesForm({ ...values, comment: value })

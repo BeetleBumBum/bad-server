@@ -62,12 +62,11 @@ export const sanitizeObj = (obj: any): any => {
     }
 
     const sanitized: any = {}
-    for (const [key, value] of Object.entries(obj)) {
-        if (key.startsWith('$')) {
-            continue
+    Object.entries(obj).forEach(([key, value]) => {
+        if (!key.startsWith('$')) {
+            sanitized[key] = sanitizeObj(value)
         }
-        sanitized[key] = sanitizeObj(value)
-    }
+    })
     return sanitized
 }
 

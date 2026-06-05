@@ -1,10 +1,11 @@
 import fs from 'fs'
+import path from 'path'
 import { NextFunction, Request, Response } from 'express'
 import { constants } from 'http2'
-import BadRequestError from '../errors/bad-request-error'
+// eslint-disable-next-line import/no-unresolved
+import * as uuid from 'uuid'
 import sharp from 'sharp'
-import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
+import BadRequestError from '../errors/bad-request-error'
 
 export const uploadFile = async (
     req: Request,
@@ -40,7 +41,7 @@ export const uploadFile = async (
             : path.join(__dirname, '../public')
         fs.mkdirSync(upload, { recursive: true })
 
-        const newName = uuidv4() + '.' + meta.format
+        const newName = `${uuid.v4()}.${meta.format}`
         const filePath = path.join(upload, newName)
 
         await sharp(req.file.buffer).toFile(filePath)

@@ -5,49 +5,55 @@ import 'dotenv/config'
 import express, { json, urlencoded } from 'express'
 import mongoose from 'mongoose'
 import path from 'path'
-import { doubleCsrf } from 'csrf-csrf';
+import { doubleCsrf } from 'csrf-csrf'
+import rateLimit from 'express-rate-limit'
 import { DB_ADDRESS, ORIGIN_ALLOW } from './config'
 import errorHandler from './middlewares/error-handler'
 import serveStatic from './middlewares/serverStatic'
 import routes from './routes'
 import { sanitizeReq } from './middlewares/sanitize'
-import rateLimit from 'express-rate-limit'
 
 const { PORT = 3000 } = process.env
 const app = express()
-// const csrf = require('csurf');
 
 app.use(cookieParser())
-// app.use(cors())
-app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }));
-// app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors({ origin: ORIGIN_ALLOW, credentials: true }))
 app.options('*', cors())
 
 const csrf = doubleCsrf({
-  getSecret: () => process.env.CSRF_SECRET || 'your-super-secret-key-for-csrf-protection-min-32-chars',
-  getSessionIdentifier: (req) => req.cookies.sessionId || req.headers['x-session-id'] as string || 'default-session',
-  cookieName: '_csrf',
-  cookieOptions: { 
-    httpOnly: true, 
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production'
-  },
-  size: 64,
-});
+    getSecret: () =>
+        process.env.CSRF_SECRET ||
+        'your-super-secret-key-for-csrf-protection-min-32-chars',
+    getSessionIdentifier: (req) =>
+        req.cookies.sessionId ||
+        (req.headers['x-session-id'] as string) ||
+        'default-session',
+    cookieName: '_csrf',
+    cookieOptions: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+    },
+    size: 64,
+})
 
 app.get('/csrf-token', csrf.doubleCsrfProtection, (req: any, res: any) => {
-    res.json({ csrfToken: csrf.generateCsrfToken(req, res) });
-});
-app.get('/api/auth/csrf-token', csrf.doubleCsrfProtection, (req: any, res: any) => {
-    res.json({ csrfToken: csrf.generateCsrfToken(req, res) });
-});
+    res.json({ csrfToken: csrf.generateCsrfToken(req, res) })
+})
+app.get(
+    '/api/auth/csrf-token',
+    csrf.doubleCsrfProtection,
+    (req: any, res: any) => {
+        res.json({ csrfToken: csrf.generateCsrfToken(req, res) })
+    }
+)
 
 app.use((_req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self'; img-src *; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:3000 http://localhost:5173"
-  );
-  next();
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'self'; img-src *; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:3000 http://localhost:5173"
+    )
+    next()
 })
 
 app.use(serveStatic(path.join(__dirname, 'public')))
@@ -62,9 +68,9 @@ const limiter = rateLimit({
     legacyHeaders: false,
 })
 
-app.use(limiter) 
+app.use(limiter)
 
-app.use(sanitizeReq);
+app.use(sanitizeReq)
 
 app.use(routes)
 app.use(errors())
