@@ -13,7 +13,7 @@ docker compose up -d
 6. Админка находится по адресу http://localhost/admin/
 
 ## Ссылка на репозиторий
-https://github.com/BeetleBumBum/bad-server#
+https://github.com/BeetleBumBum/bad-server
 Имя: Ковальчук Юлия
 Когорта: 44
 Курс: Фулстек-разработчик
